@@ -1,0 +1,13 @@
+/*
+ * fatfs_sd.h
+ *
+ *  Created on: Dec 9, 2025
+ *      Author: chand
+ */
+
+#ifndef INC_FATFS_SD_H_
+#define INC_FATFS_SD_H_
+
+
+
+#endif /* INC_FATFS_SD_H_ */

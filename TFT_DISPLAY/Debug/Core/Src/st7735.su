@@ -1,0 +1,12 @@
+../Core/Src/st7735.c:16:13:ST7735_SendCmd	16	static
+../Core/Src/st7735.c:24:13:ST7735_SendData	16	static
+../Core/Src/st7735.c:32:13:ST7735_SendDataMulti	16	static
+../Core/Src/st7735.c:40:13:ST7735_SetAddressWindow	24	static
+../Core/Src/st7735.c:57:6:ST7735_Init	8	static
+../Core/Src/st7735.c:202:6:ST7735_FillScreen	32	static
+../Core/Src/st7735.c:218:6:ST7735_DrawPixel	24	static
+../Core/Src/st7735.c:232:6:ST7735_WriteChar	32	static
+../Core/Src/st7735.c:266:6:ST7735_WriteString	32	static
+../Core/Src/st7735.c:276:6:ST7735_DrawRect	32	static
+../Core/Src/st7735.c:300:6:ST7735_FillRect	40	static
+../Core/Src/st7735.c:319:6:ST7735_DrawImage	40	static

@@ -1,0 +1,2 @@
+../Core/Src/fatfs_sd.c:9:9:SD_SPI_Transmit	1
+../Core/Src/fatfs_sd.c:16:6:SD_Delay	1

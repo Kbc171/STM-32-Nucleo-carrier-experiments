@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item key="hasShownOverlayPopupBefore" value="true"/>
+	<item key="replaceBarOpen" value="true"/>
+	<list key="searchhistory">
+		<item value="HAL_GPIO_WritePin"/>
+		<item value="SD_CS"/>
+		<item value="SD_CS_HIGH"/>
+		<item value="SD_CS_Pin"/>
+		<item value="MX_GPIO_Init"/>
+	</list>
+	<list key="replacehistory">
+		<item value="HAL_GPIO_TogglePin"/>
+	</list>
+</section>

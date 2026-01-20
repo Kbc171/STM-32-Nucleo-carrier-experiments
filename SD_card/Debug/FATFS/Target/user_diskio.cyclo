@@ -1,0 +1,17 @@
+../FATFS/Target/user_diskio.c:71:6:USER_GetCardType	1
+../FATFS/Target/user_diskio.c:76:13:dbg_tx	1
+../FATFS/Target/user_diskio.c:109:16:SD_SPI_TxRx	1
+../FATFS/Target/user_diskio.c:116:13:SD_SendDummyClocks	2
+../FATFS/Target/user_diskio.c:125:16:SD_WaitReady	3
+../FATFS/Target/user_diskio.c:137:13:SD_Release	1
+../FATFS/Target/user_diskio.c:143:16:SD_SendCmd	6
+../FATFS/Target/user_diskio.c:168:12:SD_ReadData	5
+../FATFS/Target/user_diskio.c:190:12:SD_WriteData	4
+../FATFS/Target/user_diskio.c:208:16:SD_ReadSectors	9
+../FATFS/Target/user_diskio.c:239:16:SD_WriteSectors	10
+../FATFS/Target/user_diskio.c:273:16:SD_GetCSD	3
+../FATFS/Target/user_diskio.c:290:9:USER_initialize	18
+../FATFS/Target/user_diskio.c:376:9:USER_status	2
+../FATFS/Target/user_diskio.c:394:9:USER_read	9
+../FATFS/Target/user_diskio.c:439:9:USER_write	6
+../FATFS/Target/user_diskio.c:469:9:USER_ioctl	10

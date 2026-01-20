@@ -1,0 +1,60 @@
+void print_uart(char *msg)
+{
+    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+}
+
+uint16_t MLX90614_Read16(uint8_t reg)
+{
+    uint8_t data[3];   // MLX90614 returns 3 bytes (LSB, MSB, PEC)
+
+    if (HAL_I2C_Mem_Read(&hi2c3, MLX90614_ADDR, reg,
+                         I2C_MEMADD_SIZE_8BIT, data, 3, 100) != HAL_OK)
+    {
+        return 0xFFFF; // return invalid value on error
+    }
+
+    return (uint16_t)((data[1] << 8) | data[0]);
+}
+
+float MLX90614_ReadTemp(uint8_t reg)
+{
+    uint16_t raw = MLX90614_Read16(reg);
+
+    if (raw == 0xFFFF)
+        return -1000.0;   // error indication
+
+    return (raw * 0.02f) - 273.15f;
+}
+
+int main(void)
+{
+    HAL_Init();
+    SystemClock_Config();
+    MX_GPIO_Init();
+    MX_USART2_UART_Init();
+    MX_I2C3_Init();
+
+    char buffer[100];
+    print_uart("MLX90614 Temperature Sensor Initialized\r\n");
+
+    while (1)
+    {
+        float amb = MLX90614_ReadTemp(0x06);
+        float obj = MLX90614_ReadTemp(0x07);
+
+        if (amb == -1000.0 || obj == -1000.0)
+        {
+            print_uart("I2C ERROR: Sensor not responding!\r\n");
+        }
+        else
+        {
+            snprintf(buffer, sizeof(buffer),
+                     "Ambient: %.2f°C | Object: %.2f°C\r\n",
+                     amb, obj);
+            print_uart(buffer);
+        }
+
+        print_uart("KBC\r\n");
+        HAL_Delay(1000);
+    }
+}

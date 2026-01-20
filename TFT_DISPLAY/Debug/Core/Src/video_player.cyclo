@@ -1,0 +1,5 @@
+../Core/Src/video_player.c:8:6:VideoPlayer_PlayBouncingBall	14
+../Core/Src/video_player.c:54:6:VideoPlayer_PlayColorWave	6
+../Core/Src/video_player.c:80:6:VideoPlayer_PlayRainbow	8
+../Core/Src/video_player.c:110:6:VideoPlayer_PlayAnimation	12
+../Core/Src/video_player.c:159:6:VideoPlayer_Init	1

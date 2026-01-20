@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;TFT_DISPLAY/Core/Src/ST7735.c&apos; to &apos;st7735.c&apos;" description="Rename resource &apos;ST7735.c&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Core/Src/ST7735.c" name="st7735.c" stamp="1765275220209" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;TFT_DISPLAY/Core/Inc/ST7735.h&apos; to &apos;st7735.h&apos;" description="Rename resource &apos;ST7735.h&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Core/Inc/ST7735.h" name="st7735.h" stamp="1765275230918" updateReferences="true"/>
+</session>

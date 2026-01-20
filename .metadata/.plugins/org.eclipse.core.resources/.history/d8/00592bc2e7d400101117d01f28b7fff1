@@ -1,0 +1,84 @@
+#include "st7735.h"
+
+extern SPI_HandleTypeDef hspi1;
+
+#define ST7735_WIDTH 128
+#define ST7735_HEIGHT 160
+
+#define CS_LOW()   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET)
+#define CS_HIGH()  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET)
+
+#define DC_LOW()   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET)
+#define DC_HIGH()  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET)
+
+#define RST_LOW()  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET)
+#define RST_HIGH() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET)
+
+static void ST7735_SendCmd(uint8_t cmd)
+{
+    DC_LOW();
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, &cmd, 1, 10);
+    CS_HIGH();
+}
+
+static void ST7735_SendData(uint8_t data)
+{
+    DC_HIGH();
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, &data, 1, 10);
+    CS_HIGH();
+}
+
+void ST7735_Init(void)
+{
+    // Reset sequence
+    RST_HIGH();
+    HAL_Delay(5);
+    RST_LOW();
+    HAL_Delay(20);
+    RST_HIGH();
+
+    // Basic init sequence
+    ST7735_SendCmd(0x01);   // Software Reset
+    HAL_Delay(150);
+
+    ST7735_SendCmd(0x11);   // Sleep Out
+    HAL_Delay(150);
+
+    ST7735_SendCmd(0x29);   // Display ON
+}
+
+void ST7735_FillScreen(uint16_t color)
+{
+    uint8_t data[2] = { color >> 8, color & 0xFF };
+
+    // Set address window full screen
+    ST7735_SendCmd(0x2A);
+    ST7735_SendData(0);
+    ST7735_SendData(ST7735_WIDTH - 1);
+
+    ST7735_SendCmd(0x2B);
+    ST7735_SendData(0);
+    ST7735_SendData(ST7735_HEIGHT - 1);
+
+    ST7735_SendCmd(0x2C);
+
+    DC_HIGH();
+    CS_LOW();
+    for (uint32_t i = 0; i < ST7735_WIDTH * ST7735_HEIGHT; i++)
+    {
+        HAL_SPI_Transmit(&hspi1, data, 2, 10);
+    }
+    CS_HIGH();
+}
+
+void ST7735_WriteString(uint16_t x, uint16_t y, const char* str, FontDef font, uint16_t color, uint16_t bgcolor)
+{
+    while (*str)
+    {
+        ST7735_WriteChar(x, y, *str, font, color, bgcolor);
+        x += font.width;
+        str++;
+    }
+}

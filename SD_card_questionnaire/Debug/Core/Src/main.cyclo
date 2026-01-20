@@ -1,0 +1,5 @@
+../Core/Src/main.c:61:13:UART_SendStr	1
+../Core/Src/main.c:66:17:UART_ReadLine	5
+../Core/Src/main.c:94:5:main	5
+../Core/Src/main.c:210:6:SystemClock_Config	3
+../Core/Src/main.c:260:6:Error_Handler	1

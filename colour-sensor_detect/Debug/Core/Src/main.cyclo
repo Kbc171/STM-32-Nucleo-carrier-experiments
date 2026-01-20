@@ -1,0 +1,13 @@
+../Core/Src/main.c:49:5:main	1
+../Core/Src/main.c:100:6:SystemClock_Config	3
+../Core/Src/main.c:134:13:MX_GPIO_Init	1
+../Core/Src/main.c:168:13:MX_USART2_UART_Init	2
+../Core/Src/main.c:185:9:mapColor	3
+../Core/Src/main.c:192:6:Convert_To_RGB	1
+../Core/Src/main.c:200:7:DetectColor	31
+../Core/Src/main.c:220:6:HAL_GPIO_EXTI_Callback	2
+../Core/Src/main.c:226:10:TCS3200_ReadFreq	1
+../Core/Src/main.c:233:6:TCS3200_SetColor	1
+../Core/Src/main.c:239:6:UART_Print	1
+../Core/Src/main.c:245:6:EXTI4_IRQHandler	1
+../Core/Src/main.c:251:6:Error_Handler	1

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;colour-sensor_detect/colour-sensor.ioc&apos; to &apos;colour-sensor_detect.ioc&apos;" description="Rename resource &apos;colour-sensor.ioc&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="colour-sensor.ioc" name="colour-sensor_detect.ioc" stamp="1765269934687" updateReferences="true"/>
+</session>

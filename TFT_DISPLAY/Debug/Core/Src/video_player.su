@@ -1,0 +1,5 @@
+../Core/Src/video_player.c:8:6:VideoPlayer_PlayBouncingBall	56	static
+../Core/Src/video_player.c:54:6:VideoPlayer_PlayColorWave	32	static
+../Core/Src/video_player.c:80:6:VideoPlayer_PlayRainbow	32	static
+../Core/Src/video_player.c:110:6:VideoPlayer_PlayAnimation	96	static
+../Core/Src/video_player.c:159:6:VideoPlayer_Init	4	static

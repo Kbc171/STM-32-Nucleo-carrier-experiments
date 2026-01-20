@@ -1,0 +1,144 @@
+#include "main.h"
+#include <stdio.h>
+
+UART_HandleTypeDef huart2;
+
+volatile uint32_t pulseCount = 0;
+
+// ---------------------------------------------------
+// INTERRUPT FOR PB4 (OUT pin of sensor)
+// ---------------------------------------------------
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if(GPIO_Pin == GPIO_PIN_4)
+        pulseCount++;
+}
+
+// ---------------------------------------------------
+// SELECT FILTER COLOR WITH S2, S3
+// ---------------------------------------------------
+void TCS3200_SetColor(uint8_t s2, uint8_t s3)
+{
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, s2 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, s3 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+// ---------------------------------------------------
+// MEASURE FREQUENCY (100ms window)
+// ---------------------------------------------------
+uint32_t TCS3200_ReadColor(void)
+{
+    pulseCount = 0;
+    HAL_Delay(100);
+    return pulseCount * 10;     // convert to Hz
+}
+
+// ---------------------------------------------------
+// PRINT via UART
+// ---------------------------------------------------
+void UART_Print(char *msg)
+{
+    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+}
+
+// ---------------------------------------------------
+// MAIN
+// ---------------------------------------------------
+int main(void)
+{
+    HAL_Init();
+    SystemClock_Config();
+
+    // --------------------------
+    // GPIO CLOCKS
+    // --------------------------
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_USART2_CLK_ENABLE();
+
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    // --------------------------
+    // S0, S1 (PC14, PC15)
+    // --------------------------
+    GPIO_InitStruct.Pin = GPIO_PIN_14 | GPIO_PIN_15;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    // --------------------------
+    // S2, S3 (PA11, PA12)
+    // --------------------------
+    GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_12;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    // --------------------------
+    // OE (PB7)
+    // --------------------------
+    GPIO_InitStruct.Pin = GPIO_PIN_7;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    // --------------------------
+    // OUT PB4 input with interrupt
+    // --------------------------
+    GPIO_InitStruct.Pin = GPIO_PIN_4;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    // Enable NVIC Interrupt
+    HAL_NVIC_SetPriority(EXTI4_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
+    // --------------------------
+    // UART2 Init (PA2 TX, PA3 RX)
+    // --------------------------
+    huart2.Instance = USART2;
+    huart2.Init.BaudRate = 115200;
+    huart2.Init.WordLength = UART_WORDLENGTH_8B;
+    huart2.Init.StopBits = UART_STOPBITS_1;
+    huart2.Init.Parity = UART_PARITY_NONE;
+    huart2.Init.Mode = UART_MODE_TX_RX;
+    huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+    HAL_UART_Init(&huart2);
+
+    // -------------------------------------------------------
+    // SENSOR SETTINGS: ENABLE + 20% SCALING (S0=1, S1=0)
+    // -------------------------------------------------------
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);   // OE = 0 → sensor active
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);    // S0 = 1
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);  // S1 = 0
+
+    char msg[100];
+    uint32_t R, G, B;
+
+    while (1)
+    {
+        // ------- READ RED -------
+        TCS3200_SetColor(0, 0);
+        HAL_Delay(50);
+        R = TCS3200_ReadColor();
+
+        // ------- READ GREEN -------
+        TCS3200_SetColor(1, 1);
+        HAL_Delay(50);
+        G = TCS3200_ReadColor();
+
+        // ------- READ BLUE -------
+        TCS3200_SetColor(0, 1);
+        HAL_Delay(50);
+        B = TCS3200_ReadColor();
+
+        // ------- PRINT VALUES -------
+        sprintf(msg, "R=%lu Hz  G=%lu Hz  B=%lu Hz\r\n", R, G, B);
+        UART_Print(msg);
+    }
+}
+
+void EXTI4_IRQHandler(void)
+{
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
+}

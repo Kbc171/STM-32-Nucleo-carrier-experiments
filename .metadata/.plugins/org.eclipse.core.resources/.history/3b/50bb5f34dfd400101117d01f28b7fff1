@@ -1,0 +1,148 @@
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include <stdio.h>
+#include <string.h>
+
+/* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim2;
+UART_HandleTypeDef huart2;
+
+volatile uint32_t pulseCount = 0;
+
+uint8_t mapColor(uint32_t value, uint32_t minVal, uint32_t maxVal);
+void Convert_To_RGB(uint32_t Rf, uint32_t Gf, uint32_t Bf, uint8_t *R8, uint8_t *G8, uint8_t *B8);
+char* DetectColor(uint8_t R, uint8_t G, uint8_t B);
+
+void TCS3200_SetColor(uint8_t s2, uint8_t s3);
+uint32_t TCS3200_ReadFreq(void);
+void UART_Print(char *text);
+
+/* MAIN ---------------------------------------------------------------------*/
+int main(void)
+{
+    HAL_Init();
+    SystemClock_Config();
+    MX_GPIO_Init();
+    MX_USART2_UART_Init();
+    MX_TIM2_Init();
+
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);  // OE = 0
+
+    // Set scaling: S0=1, S1=0 → 20%
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
+
+    UART_Print("TCS3200 Initialized\r\n");
+
+    uint32_t Rf, Gf, Bf;
+    uint8_t R8, G8, B8;
+    char msg[120];
+
+    while (1)
+    {
+        // ------- RED -------
+        TCS3200_SetColor(0, 0);
+        HAL_Delay(100);
+        Rf = TCS3200_ReadFreq();
+
+        // ------- GREEN -------
+        TCS3200_SetColor(1, 1);
+        HAL_Delay(100);
+        Gf = TCS3200_ReadFreq();
+
+        // ------- BLUE -------
+        TCS3200_SetColor(0, 1);
+        HAL_Delay(100);
+        Bf = TCS3200_ReadFreq();
+
+        // Convert frequency → RGB(0–255)
+        Convert_To_RGB(Rf, Gf, Bf, &R8, &G8, &B8);
+
+        // Detect color name
+        char* color = DetectColor(R8, G8, B8);
+
+        sprintf(msg,
+                "FREQ => R=%lu G=%lu B=%lu | RGB => %d,%d,%d | COLOR=%s\r\n",
+                Rf, Gf, Bf, R8, G8, B8, color);
+
+        UART_Print(msg);
+
+        HAL_Delay(300);
+    }
+}
+
+/* COLOR MAPPING ------------------------------------------------------------*/
+uint8_t mapColor(uint32_t value, uint32_t minVal, uint32_t maxVal)
+{
+    if (value < minVal) value = minVal;
+    if (value > maxVal) value = maxVal;
+
+    return (uint8_t)((value - minVal) * 255 / (maxVal - minVal));
+}
+
+void Convert_To_RGB(uint32_t Rf, uint32_t Gf, uint32_t Bf,
+                    uint8_t *R8, uint8_t *G8, uint8_t *B8)
+{
+    *R8 = mapColor(Rf, 9000, 40000);
+    *G8 = mapColor(Gf, 8000, 35000);
+    *B8 = mapColor(Bf, 7000, 36000);
+}
+
+/* ADVANCED COLOR DETECTION -------------------------------------------------*/
+char* DetectColor(uint8_t R, uint8_t G, uint8_t B)
+{
+    uint8_t max = (R > G && R > B) ? R : (G > B ? G : B);
+    uint8_t min = (R < G && R < B) ? R : (G < B ? G : B);
+
+    if (max < 40) return "Black";
+    if (max > 200 && (max - min) < 30) return "White";
+    if ((max - min) < 15) return "Grey";
+
+    if (R > 180 && G < 80 && B < 80) return "Red";
+    if (B > 150 && R < 80 && G < 120) return "Blue";
+    if (G > 150 && R < 100 && B < 120) return "Green";
+
+    if (R > 180 && G > 160 && B < 90) return "Yellow";
+    if (R > 180 && G > 80 && G < 140 && B < 80) return "Orange";
+
+    if (R > 120 && B > 140 && G < 90) return "Purple";
+    if (R > 120 && G < 100 && B < 90) return "Brown";
+
+    return "Unknown";
+}
+
+/* SENSOR FUNCTIONS ---------------------------------------------------------*/
+void TCS3200_SetColor(uint8_t s2, uint8_t s3)
+{
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, s2 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, s3 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+uint32_t TCS3200_ReadFreq(void)
+{
+    uint32_t count = 0;
+    uint32_t start = HAL_GetTick();
+
+    while ((HAL_GetTick() - start) < 100)
+    {
+        if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_SET)
+        {
+            while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_SET);
+            count++;
+        }
+    }
+    return count * 10;
+}
+
+/* UART ---------------------------------------------------------------------*/
+void UART_Print(char *text)
+{
+    HAL_UART_Transmit(&huart2, (uint8_t*)text, strlen(text), HAL_MAX_DELAY);
+}
+
+/* EXTI (Pulse Counting) ----------------------------------------------------*/
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == GPIO_PIN_4)
+        pulseCount++;
+}
